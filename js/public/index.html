@@ -1,0 +1,92 @@
+<!doctype html>
+<script src="/pizzabox/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+<script>
+  // utility function to retrieve GET parameter(s) from URL and assign as vars
+  function parseGetParam(parameterName) {
+    var result = null, tmp = [];
+    window.location.search
+        .substr(1)
+        .split("&")
+        .forEach(function (item) {
+          tmp = item.split("=");
+          if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        });
+    return result;
+  }
+</script>
+
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #messages { margin-bottom: 40px }
+    </style>
+
+  </head>    
+  
+  <!-- retrieve game ID and create invite link -->
+  <script>
+    var game_id = parseGetParam("game_id").toString();
+    var game_link = window.location.origin + window.location.pathname + "?game_id=" + game_id;
+  </script>
+  <body>
+    <div class="col-xs-12 col-sm-9">
+      <h5>Your game ID is <b><script>document.write(game_id)</script></b></h5>
+        <h5>Invite others by sharing your gameroom link! <b><script>document.write(game_link)</script></b></h5>
+        <hr style="border: 1px solid black;">
+    </div>
+    <div class="col-xs-12 col-sm-3 col-sm-offset-9" style="padding-right: 0px;
+      position: fixed;">
+      <h4><b>Game Room Chat</b></h4>
+      <ul id="messages"></ul>
+      <form action="">
+        <input id="m" autocomplete="off" />
+      </form>
+    </div>
+    
+    <script>
+      // upon connection, generate player ID and pass to server
+      var socket = io('/', {path: '/pizzabox/socket.io'});
+
+      // define the current player with a NAME and an ID
+      var player = {};
+      player.id = new Date().getTime().toString();
+      player.name = prompt("Please enter a nickname for the chat");
+      socket.emit('new player', player);
+
+      // upon disconnect, send player ID to server and display msg
+      socket.on('disconnect', (player) => {
+        socket.emit('player disconnect', player);
+      });
+
+      $(function () {
+        $('form').submit(function(e){
+          e.preventDefault();         // prevent page reload
+          var temp = player.name + ": " + $('#m').val();
+          socket.emit('chat message', temp);
+          $('#m').val('');
+          return false;
+        });
+        socket.on('chat message', function(msg){
+          $('#messages').append($('<li>').text(msg));
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      });
+    </script>
+
+  </body>
+</html>
+
+
