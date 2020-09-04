@@ -24,6 +24,7 @@
     <title>Socket.IO chat</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
+      html,body { height: 100%; }
       body { font: 13px Helvetica, Arial; }
       form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
       form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
@@ -31,7 +32,8 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
-      #messages { margin-bottom: 40px }
+      #messages { margin-bottom: 40px; }
+      #messages ul { overflow: hidden; overflow-y: scroll; }
     </style>
 
   </head>    
@@ -47,10 +49,9 @@
         <h5>Invite others by sharing your gameroom link! <b><script>document.write(game_link)</script></b></h5>
         <hr style="border: 1px solid black;">
     </div>
-    <div class="col-xs-12 col-sm-3 col-sm-offset-9" style="padding-right: 0px;
-      position: fixed;">
+    <div class="col-xs-12 col-sm-3 col-sm-offset-9" style="padding-right: 0px; position: absolute; height: 100%;">
       <h4><b>Game Room Chat</b></h4>
-      <ul id="messages"></ul>
+      <ul id="messages" style="height: 100%;"></ul>
       <form action="">
         <input id="m" autocomplete="off" />
       </form>
@@ -81,7 +82,8 @@
         });
         socket.on('chat message', function(msg){
           $('#messages').append($('<li>').text(msg));
-          window.scrollTo(0, document.body.scrollHeight);
+          window.scrollTo(0, document.querySelector("#messages").scrollHeight);
+
         });
       });
     </script>
